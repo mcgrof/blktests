@@ -4,6 +4,7 @@
 #
 # Functions and global variables used by both the srp and nvmeof-mp tests.
 
+. common/rc
 . common/shellcheck
 . common/null_blk
 
@@ -427,14 +428,8 @@ stop_soft_rdma() {
 		      echo "$i ..."
 		      rdma link del "${i}" || echo "Failed to remove ${i}"
 		done
-	if ! unload_module rdma_rxe 10; then
-		echo "Unloading rdma_rxe failed"
-		return 1
-	fi
-	if ! unload_module siw 10; then
-		echo "Unloading siw failed"
-		return 1
-	fi
+	_patient_rmmod rdma_rxe || return 1
+	_patient_rmmod 1siw  || return 1
 	} >>"$FULL"
 }
 

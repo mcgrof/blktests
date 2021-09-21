@@ -4,6 +4,8 @@
 #
 # null_blk helper functions.
 
+. common/rc
+
 _have_null_blk() {
 	_have_modules null_blk
 }
@@ -21,9 +23,8 @@ _init_null_blk() {
 	local zoned=""
 	if (( RUN_FOR_ZONED )); then zoned="zoned=1"; fi
 
-	if ! modprobe -r null_blk || ! modprobe null_blk "$@" "${zoned}" ; then
-		return 1
-	fi
+	_patient_rmmod null_blk || return 1
+	modprobe null_blk "$@" "${zoned}" || 1
 
 	udevadm settle
 	return 0
@@ -46,5 +47,5 @@ _configure_null_blk() {
 _exit_null_blk() {
 	_remove_null_blk_devices
 	udevadm settle
-	modprobe -r null_blk
+	_patient_rmmod null_blk
 }

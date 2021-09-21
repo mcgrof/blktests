@@ -326,16 +326,9 @@ stop_srp_ini() {
 	local i
 
 	log_out
-	for ((i=40;i>=0;i--)); do
-		remove_mpath_devs || return $?
-		unload_module ib_srp >/dev/null 2>&1 && break
-		sleep 1
-	done
-	if [ -e /sys/module/ib_srp ]; then
-		echo "Error: unloading kernel module ib_srp failed"
-		return 1
-	fi
-	unload_module scsi_transport_srp || return $?
+	remove_mpath_devs || return $?
+	_patient_rmmod ib_srp || return 1
+	_patient_rmmod scsi_transport_srp || return $1
 }
 
 # Associate the LIO device with name $1/$2 with file $3 and SCSI serial $4.
@@ -554,9 +547,7 @@ stop_lio_srpt() {
 	for m in ib_srpt iscsi_target_mod target_core_pscsi target_core_iblock \
 			 target_core_file target_core_stgt target_core_user \
 			 target_core_mod
-	do
-		unload_module $m 10 || return $?
-	done
+	_patient_rmmod $m || return $1
 }
 
 # Load and configure the SRP target driver

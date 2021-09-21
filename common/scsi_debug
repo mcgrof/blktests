@@ -4,14 +4,15 @@
 #
 # scsi_debug helper functions.
 
+. common/rc
+
 _have_scsi_debug() {
 	_have_modules scsi_debug
 }
 
 _init_scsi_debug() {
-	if ! modprobe -r scsi_debug || ! modprobe scsi_debug "$@"; then
-		return 1
-	fi
+	_patient_rmmod scsi_debug || return 1
+	modprobe scsi_debug "$@" || return 1
 
 	udevadm settle
 
@@ -51,5 +52,5 @@ _exit_scsi_debug() {
 	unset SCSI_DEBUG_TARGETS
 	unset SCSI_DEBUG_DEVICES
 	udevadm settle
-	modprobe -r scsi_debug
+	_patient_rmmod scsi_debug
 }
